@@ -48,6 +48,7 @@ cell_size =    18
 cols =        10
 rows =        22
 maxfps =     30
+kitchen = 5
 
 colors = [
 (0,   0,   0  ),
@@ -292,6 +293,9 @@ class TetrisApp(object):
         if self.gameover:
             self.init_game()
             self.gameover = False
+            
+    def oil_create(self):
+        self.sourcerock = (self.subsurface == 1)
     
     def run(self):
         key_actions = {
@@ -322,19 +326,27 @@ Press space to continue""" % self.score)
                         (255,255,255),
                         (self.rlim+1, 0),
                         (self.rlim+1, self.height-1))
+# Mid column
 #                    self.disp_msg("Next:", (
 #                        self.rlim+cell_size,
 #                        2))
 #                    self.disp_msg("Score: %d\n\nLevel: %d\
 #\nLines: %d" % (self.score, self.level, self.lines),
 #                        (self.rlim+cell_size, cell_size*5))
+#                    self.draw_matrix(self.next_stone,
+#                        (cols+1,2))
                     self.draw_matrix(self.bground_grid, (0,0))
                     self.draw_matrix(self.board, (0,0))
                     self.draw_sub(self.subsurface, (cols + 1,0))
                     self.draw_matrix(self.stone,
                         (self.stone_x, self.stone_y))
-#                    self.draw_matrix(self.next_stone,
-#                        (cols+1,2))
+# If in kitchen migrate
+                    if self.lines == kitchen:
+                        oil_create()
+                    elif self.lines > kitchen:
+                        
+                        
+
             pygame.display.update()
             
             for event in pygame.event.get():
