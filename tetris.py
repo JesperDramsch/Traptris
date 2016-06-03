@@ -90,6 +90,13 @@ tetris_shapes = [
      [1, 1]]
 ]
 
+rocktypes = {
+    "source": 1,
+	"sand_h": 2,
+	"sand_l": 3,
+	"seal": 4,
+	"oil": 5}
+
 def rotate_clockwise(shape):
     return [ [ shape[y][x]
             for y in range(len(shape)) ]
@@ -166,7 +173,7 @@ class TetrisApp(object):
 
     def new_stone(self):
         self.stone = self.next_stone[:]
-        self.stoneprop = weighted_choice([(1,5),(2,2),(3,2),(4,2)]) if self.lines <= 2 else weighted_choice([(2,3),(3,3),(4,3)])
+        self.stoneprop = weighted_choice([(rocktypes["source"],5),(rocktypes["sand_l"],2),(rocktypes["sand_h"],2),(rocktypes["seal"],2)]) if self.lines <= int(self.lines/7)+1 else weighted_choice([(rocktypes["sand_l"],3),(rocktypes["sand_h"],3),(rocktypes["seal"],3)])
         self.next_stone = mp(self.stoneprop,tetris_shapes[weighted_choice([(0,10),(1,12),(2,12),(3,11),(4,11),(5,8),(5,9)])])
         self.stone_x = int(cols / 2 - len(self.stone[0])/2)
         self.stone_y = 0
@@ -331,7 +338,7 @@ class TetrisApp(object):
         for y, row in enumerate(matrix):
             for x, val in enumerate(row):
                 if val == 1:
-                    oil[y][x] = 4
+                    oil[y][x] = rocktypes["oil"]
                     self.oilblocks += 1
         return oil
 #        self.subsurface += mp((self.subsurface == 1),3)
@@ -340,28 +347,28 @@ class TetrisApp(object):
         self.trappedblocks = 0
         for y, row in enumerate(oilmatrix):
             for x, val in enumerate(row):
-                if val==4:
+                if val==rocktypes["oil"]:
                     self.draw_sub(self.oil,(cols*1.5 + 1,0))
                     if submatrix[y-1][x] == 0:
                         self.gameover = True
                         return oilmatrix
                     elif submatrix[y-1][x] < 3 and oilmatrix[y-1][x] == 0:
 # Success, Upward migration                    
-                        oilmatrix[y-1][x] = 4
+                        oilmatrix[y-1][x] = rocktypes["oil"]
                         oilmatrix[y][x] = 0
 # Success, left or right
                     elif not x==0 and not x==cols-1 and submatrix[y][x-1] < 3 and submatrix[y][x+1] < 3 and oilmatrix[y][x-1] == 0 and oilmatrix[y][x+1] == 0:
-                        oilmatrix[y][x+int(2*(rand(0,2)-0.5))] = 4
+                        oilmatrix[y][x+int(2*(rand(0,2)-0.5))] = rocktypes["oil"]
                         oilmatrix[y][x] = 0
                     elif not x==0 and submatrix[y][x-1] < 3 and oilmatrix[y][x-1] == 0:
-                        oilmatrix[y][x-1] = 4
+                        oilmatrix[y][x-1] = rocktypes["oil"]
                         oilmatrix[y][x] = 0
                     elif not x==cols-1 and submatrix[y][x+1] < 3 and oilmatrix[y][x+1] == 0:
-                        oilmatrix[y][x+1] = 4
+                        oilmatrix[y][x+1] = rocktypes["oil"]
                         oilmatrix[y][x] = 0
                     else:
                         self.trappedblocks += 1
-                        if self.trappedblocks == self.oilblocks:
+                        if self.trappedblocks >= self.oilblocks:
                             self.gameover = True
                             self.victory = True
         return oilmatrix
