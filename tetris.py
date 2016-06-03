@@ -370,6 +370,7 @@ class TetrisApp(object):
 #        self.subsurface += mp((self.subsurface == 1),3)
         
     def oil_migrate(self,submatrix,oilmatrix):
+        self.trappedblocks = 0
         for y, row in enumerate(oilmatrix):
             moverow = mp(0,row)
             for x, val in enumerate(row):
@@ -404,7 +405,6 @@ class TetrisApp(object):
                         if self.trappedblocks >= self.oilblocks:
                             self.gameover = True
                             self.victory = True
-        self.trappedblocks = 0
         return oilmatrix
                     
     
@@ -421,20 +421,22 @@ class TetrisApp(object):
             'RETURN':    self.insta_drop
         }
         
-		# TEST
+		# TEST for migration paths
         """
-        kitchen = 10
-        self.subsurface = self.subsurface[:-14]
+        kitchen = 18
+        self.subsurface = self.subsurface[:-kitchen]
+        self.subsurface += [ [self.rocktypes["seal"]["val"] if (x==5 and y%4) or (x>=5 and not (y)%4)  else self.rocktypes["sand_h"]["val"] for x in range(cols) ]
+            for y in range(4) ] #trap
         self.subsurface += [ [self.rocktypes["seal"]["val"] if (x<=6 and y%4==1) or (x>=3 and (y)%4==3)  else self.rocktypes["sand_h"]["val"] for x in range(cols) ]
-            for y in range(8) ] #source
+            for y in range(8) ] #parcour
         self.subsurface += [ [self.rocktypes["sand_h"]["val"] if x%2==y%2 else self.rocktypes["sand_l"]["val"] for x in range(cols) ]
             for y in range(3) ] #sand
         self.subsurface += [ [self.rocktypes["source"]["val"] if x%2==y%2 else self.rocktypes["sand_h"]["val"] for x in range(cols) ]
             for y in range(2) ] #source
         self.subsurface += [ [self.rocktypes["source"]["val"] for x in range(cols) ]
             for y in range(1) ] #source
-        self.lines = 10
-        """        
+        self.lines = kitchen
+           """     
         self.gameover = False
         self.paused = True
                 
@@ -448,7 +450,7 @@ Your boring tetris score is: %d \n
 Press space to beat that score""" % (self.oilblocks*1000000, self.score))
             elif self.gameover and self.trappedblocks > 0:
                 self.center_msg("""Game Over!\nYou did not Trap It all \n but %d barrel are safe!
-Press space to try again""" % self.trappedblocks*1000000)
+Press space to try again""" % (self.trappedblocks*1000000))
             elif self.gameover:
                 self.center_msg("""Game Over!\nYou did not Trap It \n
 Press space to try again""")
@@ -491,7 +493,7 @@ The tetris game with a geo-twist.\n\n Form lines to build your subsurface.\n Bui
                         
                     elif self.lines >= kitchen:
                         self.slowmig +=1
-                        if self.slowmig == 50:
+                        if self.slowmig == 10:
                             self.slowmig = 0
                             self.migmax += 1
                             self.oil = self.oil_migrate(self.subsurface,self.oil)
