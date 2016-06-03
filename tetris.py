@@ -151,7 +151,7 @@ class TetrisApp(object):
         self.init_game()
         pygame.mixer.init()
         pygame.mixer.music.load(file)
-        pygame.mixer.music.play()
+        pygame.mixer.music.play(loops=-1)
 
     def new_stone(self):
         self.stone = self.next_stone[:]
