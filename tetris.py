@@ -43,6 +43,7 @@ from random import randrange as rand
 import pygame, sys
 from numpy import count_nonzero as countnz
 from numpy import multiply as mp
+from collections import deque
 # The configuration
 cell_size =    18
 cols =        10
@@ -373,74 +374,64 @@ class TetrisApp(object):
         
     def oil_migrate(self,submatrix,oilmatrix):
         self.trappedblocks = 0
-        for y, row in enumerate(oilmatrix):
-            moverow = mp(0,row)
+        for y, row in reversed(list(enumerate(oilmatrix))):
+            rando = int(2*(rand(0,2)-0.5))
+            print("\n",rando)
             for x, val in enumerate(row):
-                if val == self.rocktypes["oil"]["val"] and moverow[x] == 0:
-                    self.draw_sub(self.oil,(cols*1.5 + 1,0))
+                if val == self.rocktypes["oil"]["val"]:
                     if submatrix[y-1][x] == 0:
                         height = 9
                         if self.spill == 0:
                             self.spill_point = x
                             self.spill = 1
                         if y > height and self.spill_point == x:
-                            oilmatrix[y-1][x] = self.rocktypes["oil"]["val"]
+                            oilmatrix[y-1][x] = 1
                         elif y <= 1:
-                            print("A boom")
                             self.gameover = True
                             self.trappedblocks = countnz(oilmatrix[-self.lines+1:])
                             return oilmatrix
                         elif not x == 0 and not x == cols-1  and y <= height:
-                            oilmatrix[y-1][x+1] = self.rocktypes["oil"]["val"]
-                            oilmatrix[y-1][x-1] = self.rocktypes["oil"]["val"]
+                            oilmatrix[y-1][x+1] = 1
+                            oilmatrix[y-1][x-1] = 1
                         elif not x == cols-1   and y <= height:
-                            oilmatrix[y-1][x+1] = self.rocktypes["oil"]["val"]
+                            oilmatrix[y-1][x+1] = 1
                         elif not x == 0   and y <= height:
-                            oilmatrix[y-1][x-1] = self.rocktypes["oil"]["val"]
+                            oilmatrix[y-1][x-1] = 1
                         else:
                             pass
                        #self.gameover = True
                         #
 # Success, Upward migration                    
                     elif submatrix[y-1][x] < self.rocktypes["seal"]["val"] and oilmatrix[y-1][x] == 0:
-                        oilmatrix[y-1][x] = self.rocktypes["oil"]["val"]
+                        oilmatrix[y-1][x] = 1
                         oilmatrix[y][x] = 0
                         self.migmax = 0
 # Success, left or right
-                    elif not x==0 and not x==cols-1 and submatrix[y][x-1] < self.rocktypes["seal"]["val"] and submatrix[y][x+1] < self.rocktypes["oil"]["val"] and oilmatrix[y][x-1] == 0 and oilmatrix[y][x+1] == 0:
-                        rando = int(2*(rand(0,2)-0.5))
-                        oilmatrix[y][x+int(2*(rand(0,2)-0.5))] = self.rocktypes["oil"]["val"]
+                    elif not x==0 and not x==cols-1 and submatrix[y][x-1] < self.rocktypes["seal"]["val"] and submatrix[y][x+1] < self.rocktypes["seal"]["val"] and oilmatrix[y][x-1] == 0 and oilmatrix[y][x+1] == 0:
+                        oilmatrix[y][x+rando] = 1
                         oilmatrix[y][x] = 0
-                        if rando == 1:
-                            moverow[x+1]=1
-                        del rando
                         self.migmax += 1
 # Success, left
                     elif not x==0 and submatrix[y][x-1] < self.rocktypes["seal"]["val"] and oilmatrix[y][x-1] == 0:
-                        oilmatrix[y][x-1] = self.rocktypes["oil"]["val"]
+                        oilmatrix[y][x-1] = 1
                         oilmatrix[y][x] = 0
                         self.migmax += 1
+                        rando = 1
 # Success, right
                     elif not x==cols-1 and submatrix[y][x+1] < self.rocktypes["seal"]["val"] and oilmatrix[y][x+1] == 0:
-                        oilmatrix[y][x+1] = self.rocktypes["oil"]["val"]    
+                        oilmatrix[y][x+1] = 1
                         oilmatrix[y][x] = 0
-                        moverow[x+1]=1
                         self.migmax += 1
+                        rando = -1
                     else:
                         self.trappedblocks += 1
+                        oilmatrix[y][x] = 1 
                         if self.trappedblocks >= self.oilblocks:
                             self.gameover = True
                             self.victory = True
+        oilmatrix = mp(self.rocktypes["oil"]["val"],oilmatrix)
+        self.draw_sub(oilmatrix,(cols*1.5 + 1,0))
         return oilmatrix
-    
-
-    def spill_ani(self,coord,submatrix):
-        off_x, off_y = coord
-        height = int(cols - self.lines)
-        for num in range(height):
-            print(off_x,off_y,num)
-            self.oil[off_x][off_y-num] = self.rocktypes["oil"]["val"]
-        self.draw_sub(submatrix,(cols*1.5 + 1,0))
     
     def run(self):
         key_actions = {
@@ -456,7 +447,7 @@ class TetrisApp(object):
         }
         
         # TEST for migration paths
-        """
+        
         kitchen = 18
         self.subsurface = self.subsurface[:-kitchen]
         self.subsurface += [ [self.rocktypes["seal"]["val"] if (x==5 and y%4) or (x>=5 and not (y)%4)  else self.rocktypes["sand_h"]["val"] for x in range(cols) ]
@@ -470,7 +461,7 @@ class TetrisApp(object):
         self.subsurface += [ [self.rocktypes["seal"]["val"] for x in range(cols) ]
             for y in range(1) ] #source
         self.lines = kitchen
-         """  
+        
         self.gameover = False
         self.paused = True
                 
