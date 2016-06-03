@@ -49,23 +49,9 @@ cols =        10
 rows =        22
 maxfps =     30
 kitchen = 5
-
-colors = [
-(  255,   255,   255), # white
-(150, 150, 150), # grey
-(250, 233,   0), # yellow
-(241, 228,   0), # yellow
-(200,  96,   60), # brown
-(  0,   0,   0), # black 
-(235, 235, 235), # midgrey
-(255,  255, 255), # white
-(150, 161, 218 ), #
-(35,  35,  35) # Helper color for background grid
-]
-
-
 file = 'music.mp3'
 
+colors = [(  255,   255,   255)]*12
 
 # Define the shapes of the single parts
 tetris_shapes = [
@@ -129,6 +115,10 @@ def weighted_choice(choices):
       upto += w
    assert False, "Shouldn't get here"
 
+def color_vec(matrix):
+    for key in matrix:
+        colors[matrix[key]["val"]]=matrix[key]["color"]
+
 def new_board():
     board = [ [ 0 for x in range(cols) ]
             for y in range(rows) ]
@@ -147,8 +137,6 @@ class TetrisApp(object):
         self.width = cell_size*(2*cols+2)
         self.height = cell_size*rows
         self.rlim = cell_size*cols
-        self.bground_grid = [[ 7 if x%2==y%2 else 6 for x in range(cols)] for y in range(rows)]
-        self.subsurf_grid = [[ 7 if x%2==y%2 else 6 for x in range(cols)] for y in range(rows*2)]
         
         self.default_font =  pygame.font.Font(
             pygame.font.get_default_font(), 12)
@@ -220,15 +208,29 @@ class TetrisApp(object):
                 "val": 5,
                 "name": "Oil",
                 "color":(0,0,0)}}
+        self.bg_colors = {
+            "lightgrey" : { 
+                "val": 8,
+                "color": (235, 235, 235)},
+            "midgrey" : { 
+                "val": 9,
+                "color": (220, 220, 220)},
+            "darkgrey" : { 
+                "val": 10,
+                "color": (35, 35, 35)}
+        }	
+        print(colors)
+        print("bla")
+        color_vec(self.bg_colors)        
+        color_vec(self.rocktypes)
+        print(colors)
+        self.bground_grid = [[ self.bg_colors["midgrey"]["val"] if x%2==y%2 else self.bg_colors["lightgrey"]["val"] for x in range(cols)] for y in range(rows)]
+        self.subsurf_grid = [[ self.bg_colors["midgrey"]["val"] if x%2==y%2 else self.bg_colors["lightgrey"]["val"] for x in range(cols)] for y in range(rows*2)]
         self.new_stone()
         self.stoneprop = self.rocktypes["source"]
         self.victory = False
         self.runoil = False
         self.slowmig = 0
-        # self.stonenames = ["Black Shale","Sandstone","Sandstone","Clay"]
-        # self.stoneperm = [0,1,2,-2]        
-        # self.stonetoc = [20,1,1,4]        
-        # self.stonepore = [10,20,30,50]
         pygame.time.set_timer(pygame.USEREVENT+1, 1000)
     
     def disp_msg(self, msg, topleft): 
@@ -379,22 +381,22 @@ class TetrisApp(object):
                     if submatrix[y-1][x] == 0:
                         self.gameover = True
                         return oilmatrix
-                    elif submatrix[y-1][x] < 3 and oilmatrix[y-1][x] == 0:
+                    elif submatrix[y-1][x] < self.rocktypes["oil"]["val"] and oilmatrix[y-1][x] == 0:
 # Success, Upward migration                    
                         oilmatrix[y-1][x] = self.rocktypes["oil"]["val"]
                         oilmatrix[y][x] = 0
 # Success, left or right
-                    elif not x==0 and not x==cols-1 and submatrix[y][x-1] < 3 and submatrix[y][x+1] < 3 and oilmatrix[y][x-1] == 0 and oilmatrix[y][x+1] == 0:
+                    elif not x==0 and not x==cols-1 and submatrix[y][x-1] < self.rocktypes["seal"]["val"] and submatrix[y][x+1] < self.rocktypes["oil"]["val"] and oilmatrix[y][x-1] == 0 and oilmatrix[y][x+1] == 0:
                         rando = int(2*(rand(0,2)-0.5))
                         oilmatrix[y][x+int(2*(rand(0,2)-0.5))] = self.rocktypes["oil"]["val"]
                         oilmatrix[y][x] = 0
                         if rando == 1:
-                            x+=1							
+                            x+=1                            
                         del rando
-                    elif not x==0 and submatrix[y][x-1] < 3 and oilmatrix[y][x-1] == 0:
+                    elif not x==0 and submatrix[y][x-1] < self.rocktypes["seal"]["val"] and oilmatrix[y][x-1] == 0:
                         oilmatrix[y][x-1] = self.rocktypes["oil"]["val"]
                         oilmatrix[y][x] = 0
-                    elif not x==cols-1 and submatrix[y][x+1] < 3 and oilmatrix[y][x+1] == 0:
+                    elif not x==cols-1 and submatrix[y][x+1] < self.rocktypes["seal"]["val"] and oilmatrix[y][x+1] == 0:
                         oilmatrix[y][x+1] = self.rocktypes["oil"]["val"]
                         oilmatrix[y][x] = 0
                         x+=1
