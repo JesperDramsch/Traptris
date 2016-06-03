@@ -48,7 +48,7 @@ cell_size =    18
 cols =        10
 rows =        22
 maxfps =     30
-kitchen = 7
+kitchen = 5
 
 colors = [
 (  255,   255,   255), # white
@@ -93,8 +93,8 @@ tetris_shapes = [
 
 def rotate_clockwise(shape):
     return [ [ shape[y][x]
-            for y in xrange(len(shape)) ]
-        for x in xrange(len(shape[0]) - 1, -1, -1) ]
+            for y in range(len(shape)) ]
+        for x in range(len(shape[0]) - 1, -1, -1) ]
 
 def check_collision(board, shape, offset):
     off_x, off_y = offset
@@ -110,7 +110,7 @@ def check_collision(board, shape, offset):
 def remove_row(board, row, subsurface, lines):
     subsurface[(rows*2-1)-lines] = board[row]
     del board[row]
-    return [[0 for i in xrange(cols)]] + board
+    return [[0 for i in range(cols)]] + board
     
 def join_matrixes(mat1, mat2, mat2_off):
     off_x, off_y = mat2_off
@@ -120,14 +120,14 @@ def join_matrixes(mat1, mat2, mat2_off):
     return mat1
 
 def new_board():
-    board = [ [ 0 for x in xrange(cols) ]
-            for y in xrange(rows) ]
-    board += [[ 1 for x in xrange(cols)]]
+    board = [ [ 0 for x in range(cols) ]
+            for y in range(rows) ]
+    board += [[ 1 for x in range(cols)]]
     return board
  
 def new_sub():
-    board = [ [0 for x in xrange(cols) ]
-            for y in xrange(rows*2) ]
+    board = [ [0 for x in range(cols) ]
+            for y in range(rows*2) ]
     return board
 
 class TetrisApp(object):
@@ -137,8 +137,8 @@ class TetrisApp(object):
         self.width = cell_size*(2*cols+2)
         self.height = cell_size*rows
         self.rlim = cell_size*cols
-        self.bground_grid = [[ 5 if x%2==y%2 else 6 for x in xrange(cols)] for y in xrange(rows)]
-        self.subsurf_grid = [[ 5 if x%2==y%2 else 6 for x in xrange(cols)] for y in xrange(rows*2)]
+        self.bground_grid = [[ 5 if x%2==y%2 else 6 for x in range(cols)] for y in range(rows)]
+        self.subsurf_grid = [[ 5 if x%2==y%2 else 6 for x in range(cols)] for y in range(rows*2)]
         
         self.default_font =  pygame.font.Font(
             pygame.font.get_default_font(), 12)
@@ -161,7 +161,7 @@ class TetrisApp(object):
         self.next_stone = mp(self.stoneprop,tetris_shapes[rand(len(tetris_shapes))])
         self.stone_x = int(cols / 2 - len(self.stone[0])/2)
         self.stone_y = 0
-        
+        self.stonerand = [rand(-1,2),rand(1,4),rand(-3,6)]
         if check_collision(self.board,
                            self.stone,
                            (self.stone_x, self.stone_y)):
@@ -183,7 +183,10 @@ class TetrisApp(object):
         self.victory = False
         self.runoil = False
         self.slowmig = 0
-        
+        self.stonenames = ["Black Shale","Sandstone","Clay"]
+        self.stoneperm = [0,2,-2]        
+        self.stonetoc = [20,1,4]        
+        self.stonepore = [10,30,50]
         pygame.time.set_timer(pygame.USEREVENT+1, 1000)
     
     def disp_msg(self, msg, topleft): 
@@ -328,26 +331,32 @@ class TetrisApp(object):
     def oil_migrate(self,submatrix,oilmatrix):
         self.trappedblocks = 0
         for y, row in enumerate(oilmatrix):
-            self.draw_sub(self.oil,(cols*1.5 + 1,0))
             for x, val in enumerate(row):
                 if val==4:
+                    self.draw_sub(self.oil,(cols*1.5 + 1,0))
                     if submatrix[y-1][x] == 0:
                         self.gameover = True
+                        return oilmatrix
                     elif submatrix[y-1][x] < 3 and oilmatrix[y-1][x] == 0:
 # Success, Upward migration                    
                         oilmatrix[y-1][x] = 4
                         oilmatrix[y][x] = 0
+                        print("Upward migration")
 # Success, left or right
-                    elif not x==0 and not x==cols-1  and submatrix[y][x-1] < 3 and submatrix[y][x+1] < 3 and oilmatrix[y][x-1] == 0 and oilmatrix[y][x+1] == 0:
-                        oilmatrix[y][x+2*int((rand(0,2)-0.5))] = 4
+                    elif not x==0 and not x==cols-1 and submatrix[y][x-1] < 3 and submatrix[y][x+1] < 3 and oilmatrix[y][x-1] == 0 and oilmatrix[y][x+1] == 0:
+                        oilmatrix[y][x+int(2*(rand(0,2)-0.5))] = 4
                         oilmatrix[y][x] = 0
+                        print("random migration")
                     elif not x==0 and submatrix[y][x-1] < 3 and oilmatrix[y][x-1] == 0:
                         oilmatrix[y][x-1] = 4
                         oilmatrix[y][x] = 0
+                        print("force left")
                     elif not x==cols-1 and submatrix[y][x+1] < 3 and oilmatrix[y][x+1] == 0:
                         oilmatrix[y][x+1] = 4
                         oilmatrix[y][x] = 0
+                        print("force right")
                     else:
+                        print("trapped")
                         self.trappedblocks += 1
                         if self.trappedblocks == self.oilblocks:
                             self.gameover = True
@@ -370,10 +379,6 @@ class TetrisApp(object):
         
         self.gameover = False
         self.paused = True
-        self.stonenames = ["Black Shale","Sandstone","Clay"]
-        self.stoneperm = [1,100,0.01]        
-        self.stonetoc = ["20%","0%","4%"]        
-        self.stonepore = ["10%","30%","50%"]
                 
         
         dont_burn_my_cpu = pygame.time.Clock()
@@ -402,8 +407,8 @@ The tetris game with a geo-twist.\n\n Form lines to build your subsurface.\n Bui
 # Mid column
                     self.disp_msg("Next:", (
                         self.rlim+cell_size, 2))
-                    self.disp_msg("Rock Type: \n%s\n\nTOC: %s\n\nPerm.: %dmD\n\nPorosity: %s\n\nScore: %d\n\nLevel: %d\
-                        \nLines: %d" % (self.stonenames[self.stoneprop-1], self.stonetoc[self.stoneprop-1], self.stoneperm[self.stoneprop-1], self.stonepore[self.stoneprop-1], self.score, self.level, self.lines),
+                    self.disp_msg("Rock Type: \n%s\n\nTOC: %d%%\n\nPerm.: %3.2fmD\n\nPorosity: %d%%\n\nScore: %d\n\nLevel: %d\
+                        \nLines: %d" % (self.stonenames[self.stoneprop-1], self.stonetoc[self.stoneprop-1]+self.stonerand[0], self.stonerand[1]*10**self.stoneperm[self.stoneprop-1], self.stonerand[2]+self.stonepore[self.stoneprop-1], self.score, self.level, self.lines),
                         (self.rlim+cell_size, cell_size*5))
                     self.draw_matrix(self.next_stone,
                         (cols+1,2))
