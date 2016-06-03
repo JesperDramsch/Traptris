@@ -48,7 +48,7 @@ cell_size =    18
 cols =        10
 rows =        22
 maxfps =     30
-kitchen = 5
+kitchen = 15
 file = 'music.mp3'
 
 colors = [(  255,   255,   255)]*12
@@ -218,12 +218,9 @@ class TetrisApp(object):
             "darkgrey" : { 
                 "val": 10,
                 "color": (35, 35, 35)}
-        }	
-        print(colors)
-        print("bla")
+        }
         color_vec(self.bg_colors)        
         color_vec(self.rocktypes)
-        print(colors)
         self.bground_grid = [[ self.bg_colors["midgrey"]["val"] if x%2==y%2 else self.bg_colors["lightgrey"]["val"] for x in range(cols)] for y in range(rows)]
         self.subsurf_grid = [[ self.bg_colors["midgrey"]["val"] if x%2==y%2 else self.bg_colors["lightgrey"]["val"] for x in range(cols)] for y in range(rows*2)]
         self.new_stone()
@@ -381,7 +378,7 @@ class TetrisApp(object):
                     if submatrix[y-1][x] == 0:
                         self.gameover = True
                         return oilmatrix
-                    elif submatrix[y-1][x] < self.rocktypes["oil"]["val"] and oilmatrix[y-1][x] == 0:
+                    elif submatrix[y-1][x] < self.rocktypes["seal"]["val"] and oilmatrix[y-1][x] == 0:
 # Success, Upward migration                    
                         oilmatrix[y-1][x] = self.rocktypes["oil"]["val"]
                         oilmatrix[y][x] = 0
@@ -397,7 +394,7 @@ class TetrisApp(object):
                         oilmatrix[y][x-1] = self.rocktypes["oil"]["val"]
                         oilmatrix[y][x] = 0
                     elif not x==cols-1 and submatrix[y][x+1] < self.rocktypes["seal"]["val"] and oilmatrix[y][x+1] == 0:
-                        oilmatrix[y][x+1] = self.rocktypes["oil"]["val"]
+                        oilmatrix[y][x+1] = self.rocktypes["oil"]["val"]	
                         oilmatrix[y][x] = 0
                         x+=1
                     else:
