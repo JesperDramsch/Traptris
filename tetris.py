@@ -119,6 +119,16 @@ def join_matrixes(mat1, mat2, mat2_off):
             mat1[cy+off_y-1    ][cx+off_x] += val
     return mat1
 
+def weighted_choice(choices):
+   total = sum(w for c, w in choices)
+   r = rand(0, total+1)
+   upto = 0
+   for c, w in choices:
+      if upto + w >= r:
+         return c
+      upto += w
+   assert False, "Shouldn't get here"
+
 def new_board():
     board = [ [ 0 for x in range(cols) ]
             for y in range(rows) ]
@@ -157,8 +167,8 @@ class TetrisApp(object):
 
     def new_stone(self):
         self.stone = self.next_stone[:]
-        self.stoneprop = probs[rand(0,10)] if self.lines <= 2 else probs[rand(5,10)]
-        self.next_stone = mp(self.stoneprop,tetris_shapes[rand(len(tetris_shapes))])
+        self.stoneprop = weighted_choice([(1,5),(2,3),(3,2)]) if self.lines <= 2 else weighted_choice([(2,3),(3,2)])
+        self.next_stone = mp(self.stoneprop,tetris_shapes[weighted_choice([(0,2),(1,4),(2,4),(3,3),(4,3),(5,1),(5,2)])])
         self.stone_x = int(cols / 2 - len(self.stone[0])/2)
         self.stone_y = 0
         self.stonerand = [rand(-1,2),rand(1,4),rand(-3,6)]
