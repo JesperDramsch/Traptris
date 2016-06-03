@@ -90,12 +90,6 @@ tetris_shapes = [
      [1, 1]]
 ]
 
-rocktypes = {
-    "source": 1,
-	"sand_h": 2,
-	"sand_l": 3,
-	"seal": 4,
-	"oil": 5}
 
 def rotate_clockwise(shape):
     return [ [ shape[y][x]
@@ -173,8 +167,8 @@ class TetrisApp(object):
 
     def new_stone(self):
         self.stone = self.next_stone[:]
-        self.stoneprop = weighted_choice([(rocktypes["source"],5),(rocktypes["sand_l"],2),(rocktypes["sand_h"],2),(rocktypes["seal"],2)]) if self.lines <= int(self.lines/7)+1 else weighted_choice([(rocktypes["sand_l"],3),(rocktypes["sand_h"],3),(rocktypes["seal"],3)])
-        self.next_stone = mp(self.stoneprop,tetris_shapes[weighted_choice([(0,10),(1,12),(2,12),(3,11),(4,11),(5,8),(5,9)])])
+        self.stoneprop = weighted_choice([(self.rocktypes["source"],5),(self.rocktypes["sand_l"],2),(self.rocktypes["sand_h"],2),(self.rocktypes["seal"],2)]) if self.lines <= int(self.lines/7)+1 else weighted_choice([(self.rocktypes["sand_l"],3),(self.rocktypes["sand_h"],3),(self.rocktypes["seal"],3)])
+        self.next_stone = mp(self.stoneprop["val"],tetris_shapes[weighted_choice([(0,10),(1,12),(2,12),(3,11),(4,11),(5,8),(5,9)])])
         self.stone_x = int(cols / 2 - len(self.stone[0])/2)
         self.stone_y = 0
         self.stonerand = [rand(-1,2),rand(1,4),rand(-3,6)]
@@ -193,15 +187,48 @@ class TetrisApp(object):
         self.trappedblocks = 0
         self.score = 0
         self.lines = 0     
+        self.rocktypes = {
+            "source": {
+                "val": 1,
+                "name": "Black Shale",
+                "perm": 0,
+                "pore": 10,
+                "toc": 20,
+                "color":(150,150,150)},
+            "sand_h": {
+                "val": 2,
+                "name": "Sandstone",
+                "perm": 1,
+                "pore": 20,
+                "toc": 1,
+                "color":(250,233,0)},
+            "sand_l": {
+                "val": 3,
+                "name": "Sandstone",
+                "perm": 2,
+                "pore": 30,
+                "toc": 1,
+                "color":(241,228,0)},
+            "seal": {
+                "val": 4,
+                "name": "Clay",
+                "perm": -2,
+                "pore": 40,
+                "toc": 4,
+                "color":(200,96,60)},
+            "oil": {
+                "val": 5,
+                "name": "Oil",
+                "color":(0,0,0)}}
         self.new_stone()
-        self.stoneprop = 0
+        self.stoneprop = self.rocktypes["source"]
         self.victory = False
         self.runoil = False
         self.slowmig = 0
-        self.stonenames = ["Black Shale","Sandstone","Sandstone","Clay"]
-        self.stoneperm = [0,1,2,-2]        
-        self.stonetoc = [20,1,1,4]        
-        self.stonepore = [10,20,30,50]
+        # self.stonenames = ["Black Shale","Sandstone","Sandstone","Clay"]
+        # self.stoneperm = [0,1,2,-2]        
+        # self.stonetoc = [20,1,1,4]        
+        # self.stonepore = [10,20,30,50]
         pygame.time.set_timer(pygame.USEREVENT+1, 1000)
     
     def disp_msg(self, msg, topleft): 
@@ -338,7 +365,7 @@ class TetrisApp(object):
         for y, row in enumerate(matrix):
             for x, val in enumerate(row):
                 if val == 1:
-                    oil[y][x] = rocktypes["oil"]
+                    oil[y][x] = self.rocktypes["oil"]["val"]
                     self.oilblocks += 1
         return oil
 #        self.subsurface += mp((self.subsurface == 1),3)
@@ -347,25 +374,30 @@ class TetrisApp(object):
         self.trappedblocks = 0
         for y, row in enumerate(oilmatrix):
             for x, val in enumerate(row):
-                if val==rocktypes["oil"]:
+                if val== self.rocktypes["oil"]["val"]:
                     self.draw_sub(self.oil,(cols*1.5 + 1,0))
                     if submatrix[y-1][x] == 0:
                         self.gameover = True
                         return oilmatrix
                     elif submatrix[y-1][x] < 3 and oilmatrix[y-1][x] == 0:
 # Success, Upward migration                    
-                        oilmatrix[y-1][x] = rocktypes["oil"]
+                        oilmatrix[y-1][x] = self.rocktypes["oil"]["val"]
                         oilmatrix[y][x] = 0
 # Success, left or right
                     elif not x==0 and not x==cols-1 and submatrix[y][x-1] < 3 and submatrix[y][x+1] < 3 and oilmatrix[y][x-1] == 0 and oilmatrix[y][x+1] == 0:
-                        oilmatrix[y][x+int(2*(rand(0,2)-0.5))] = rocktypes["oil"]
+                        rando = int(2*(rand(0,2)-0.5))
+                        oilmatrix[y][x+int(2*(rand(0,2)-0.5))] = self.rocktypes["oil"]["val"]
                         oilmatrix[y][x] = 0
+                        if rando == 1:
+                            x+=1							
+                        del rando
                     elif not x==0 and submatrix[y][x-1] < 3 and oilmatrix[y][x-1] == 0:
-                        oilmatrix[y][x-1] = rocktypes["oil"]
+                        oilmatrix[y][x-1] = self.rocktypes["oil"]["val"]
                         oilmatrix[y][x] = 0
                     elif not x==cols-1 and submatrix[y][x+1] < 3 and oilmatrix[y][x+1] == 0:
-                        oilmatrix[y][x+1] = rocktypes["oil"]
+                        oilmatrix[y][x+1] = self.rocktypes["oil"]["val"]
                         oilmatrix[y][x] = 0
+                        x+=1
                     else:
                         self.trappedblocks += 1
                         if self.trappedblocks >= self.oilblocks:
@@ -418,7 +450,7 @@ The tetris game with a geo-twist.\n\n Form lines to build your subsurface.\n Bui
                     self.disp_msg("Next:", (
                         self.rlim+cell_size, 2))
                     self.disp_msg("Rock Type: \n%s\n\nTOC: %d%%\n\nPerm.: %3.2fmD\n\nPorosity: %d%%\n\nScore: %d\n\nLevel: %d\
-                        \nLines: %d" % (self.stonenames[self.stoneprop-1], self.stonetoc[self.stoneprop-1]+self.stonerand[0], self.stonerand[1]*10**self.stoneperm[self.stoneprop-1], self.stonerand[2]+self.stonepore[self.stoneprop-1], self.score, self.level, self.lines),
+                        \nLines: %d" % (self.stoneprop["name"], self.stoneprop["toc"]+self.stonerand[0], self.stonerand[1]*10**self.stoneprop["perm"], self.stonerand[2]+self.stoneprop["pore"], self.score, self.level, self.lines),
                         (self.rlim+cell_size, cell_size*5))
                     self.draw_matrix(self.next_stone,
                         (cols+1,2))
