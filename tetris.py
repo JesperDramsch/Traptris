@@ -341,22 +341,17 @@ class TetrisApp(object):
 # Success, Upward migration                    
                         oilmatrix[y-1][x] = 4
                         oilmatrix[y][x] = 0
-                        print("Upward migration")
 # Success, left or right
                     elif not x==0 and not x==cols-1 and submatrix[y][x-1] < 3 and submatrix[y][x+1] < 3 and oilmatrix[y][x-1] == 0 and oilmatrix[y][x+1] == 0:
                         oilmatrix[y][x+int(2*(rand(0,2)-0.5))] = 4
                         oilmatrix[y][x] = 0
-                        print("random migration")
                     elif not x==0 and submatrix[y][x-1] < 3 and oilmatrix[y][x-1] == 0:
                         oilmatrix[y][x-1] = 4
                         oilmatrix[y][x] = 0
-                        print("force left")
                     elif not x==cols-1 and submatrix[y][x+1] < 3 and oilmatrix[y][x+1] == 0:
                         oilmatrix[y][x+1] = 4
                         oilmatrix[y][x] = 0
-                        print("force right")
                     else:
-                        print("trapped")
                         self.trappedblocks += 1
                         if self.trappedblocks == self.oilblocks:
                             self.gameover = True
@@ -433,7 +428,7 @@ The tetris game with a geo-twist.\n\n Form lines to build your subsurface.\n Bui
                         
                     elif self.lines >= kitchen:
                         self.slowmig +=1
-                        if self.slowmig == 25:
+                        if self.slowmig == 50:
                             self.slowmig = 0
                             self.migmax += 1
                             self.oil = self.oil_migrate(self.subsurface,self.oil)
