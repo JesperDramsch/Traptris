@@ -530,7 +530,6 @@ The tetris game with a geo-twist.\n\n Form lines to build your subsurface.\n Bui
                         if self.slowmig == 65:
                             self.slowmig = 0
                             self.oil = self.oil_migrate(self.subsurface,self.oil)
-                            print(self.migmax)
                             if self.migmax >= countnz(self.oil)*10+1:
                                 self.gameover = True
                                 self.victory = True
