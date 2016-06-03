@@ -171,6 +171,7 @@ class TetrisApp(object):
         self.oil = new_sub()
         self.oilblocks = 0
         self.level = 1
+        self.spill = 0
         self.migmax = 0
         self.trappedblocks = 0
         self.score = 0
@@ -225,6 +226,7 @@ class TetrisApp(object):
         self.subsurf_grid = [[ self.bg_colors["midgrey"]["val"] if x%2==y%2 else self.bg_colors["lightgrey"]["val"] for x in range(cols)] for y in range(rows*2)]
         self.new_stone()
         self.stoneprop = self.rocktypes["source"]
+        self.spill_point = int(cols/2)
         self.victory = False
         self.runoil = False
         self.slowmig = 0
@@ -377,8 +379,28 @@ class TetrisApp(object):
                 if val == self.rocktypes["oil"]["val"] and moverow[x] == 0:
                     self.draw_sub(self.oil,(cols*1.5 + 1,0))
                     if submatrix[y-1][x] == 0:
-                        self.gameover = True
-                        #return oilmatrix
+                        height = 9
+                        if self.spill == 0:
+                            self.spill_point = x
+                            self.spill = 1
+                        if y > height and self.spill_point == x:
+                            oilmatrix[y-1][x] = self.rocktypes["oil"]["val"]
+                        elif y <= 1:
+                            print("A boom")
+                            self.gameover = True
+                            self.trappedblocks = countnz(oilmatrix[-self.lines+1:])
+                            return oilmatrix
+                        elif not x == 0 and not x == cols-1  and y <= height:
+                            oilmatrix[y-1][x+1] = self.rocktypes["oil"]["val"]
+                            oilmatrix[y-1][x-1] = self.rocktypes["oil"]["val"]
+                        elif not x == cols-1   and y <= height:
+                            oilmatrix[y-1][x+1] = self.rocktypes["oil"]["val"]
+                        elif not x == 0   and y <= height:
+                            oilmatrix[y-1][x-1] = self.rocktypes["oil"]["val"]
+                        else:
+                            pass
+                       #self.gameover = True
+                        #
 # Success, Upward migration                    
                     elif submatrix[y-1][x] < self.rocktypes["seal"]["val"] and oilmatrix[y-1][x] == 0:
                         oilmatrix[y-1][x] = self.rocktypes["oil"]["val"]
@@ -406,7 +428,15 @@ class TetrisApp(object):
                             self.gameover = True
                             self.victory = True
         return oilmatrix
-                    
+    
+
+    def spill_ani(self,coord,submatrix):
+        off_x, off_y = coord
+        height = int(cols - self.lines)
+        for num in range(height):
+            print(off_x,off_y,num)
+            self.oil[off_x][off_y-num] = self.rocktypes["oil"]["val"]
+        self.draw_sub(submatrix,(cols*1.5 + 1,0))
     
     def run(self):
         key_actions = {
@@ -421,7 +451,7 @@ class TetrisApp(object):
             'RETURN':    self.insta_drop
         }
         
-		# TEST for migration paths
+        # TEST for migration paths
         """
         kitchen = 18
         self.subsurface = self.subsurface[:-kitchen]
@@ -436,7 +466,7 @@ class TetrisApp(object):
         self.subsurface += [ [self.rocktypes["source"]["val"] for x in range(cols) ]
             for y in range(1) ] #source
         self.lines = kitchen
-           """     
+        """   
         self.gameover = False
         self.paused = True
                 
@@ -493,11 +523,11 @@ The tetris game with a geo-twist.\n\n Form lines to build your subsurface.\n Bui
                         
                     elif self.lines >= kitchen:
                         self.slowmig +=1
-                        if self.slowmig == 10:
+                        if self.slowmig == 50:
                             self.slowmig = 0
                             self.migmax += 1
                             self.oil = self.oil_migrate(self.subsurface,self.oil)
-                            if self.migmax >= self.lines*4+20:
+                            if self.migmax >= self.lines*5:
                                 self.gameover = True
                                 self.victory = True
                         self.draw_sub(self.oil,(cols*1.5 + 1,0))
