@@ -54,16 +54,15 @@ colors = [
 (  255,   255,   255), # white
 (150, 150, 150), # grey
 (250, 233,   0), # yellow
+(241, 228,   0), # yellow
 (200,  96,   60), # brown
 (  0,   0,   0), # black 
 (235, 235, 235), # midgrey
 (255,  255, 255), # white
-(146, 202, 73 ), #
 (150, 161, 218 ), #
 (35,  35,  35) # Helper color for background grid
 ]
 
-probs = [1]*5 + [2]*3 + [3]*2
 
 file = 'music.mp3'
 
@@ -147,8 +146,8 @@ class TetrisApp(object):
         self.width = cell_size*(2*cols+2)
         self.height = cell_size*rows
         self.rlim = cell_size*cols
-        self.bground_grid = [[ 5 if x%2==y%2 else 6 for x in range(cols)] for y in range(rows)]
-        self.subsurf_grid = [[ 5 if x%2==y%2 else 6 for x in range(cols)] for y in range(rows*2)]
+        self.bground_grid = [[ 7 if x%2==y%2 else 6 for x in range(cols)] for y in range(rows)]
+        self.subsurf_grid = [[ 7 if x%2==y%2 else 6 for x in range(cols)] for y in range(rows*2)]
         
         self.default_font =  pygame.font.Font(
             pygame.font.get_default_font(), 12)
@@ -167,7 +166,7 @@ class TetrisApp(object):
 
     def new_stone(self):
         self.stone = self.next_stone[:]
-        self.stoneprop = weighted_choice([(1,5),(2,3),(3,2)]) if self.lines <= 2 else weighted_choice([(2,3),(3,2)])
+        self.stoneprop = weighted_choice([(1,5),(2,2),(3,2),(4,2)]) if self.lines <= 2 else weighted_choice([(2,3),(3,3),(4,3)])
         self.next_stone = mp(self.stoneprop,tetris_shapes[weighted_choice([(0,10),(1,12),(2,12),(3,11),(4,11),(5,8),(5,9)])])
         self.stone_x = int(cols / 2 - len(self.stone[0])/2)
         self.stone_y = 0
@@ -181,7 +180,6 @@ class TetrisApp(object):
         self.board = new_board()
         self.subsurface = new_sub()
         self.oil = new_sub()
-        self.oil = mp(0,self.oil)
         self.oilblocks = 0
         self.level = 1
         self.migmax = 0
@@ -193,10 +191,10 @@ class TetrisApp(object):
         self.victory = False
         self.runoil = False
         self.slowmig = 0
-        self.stonenames = ["Black Shale","Sandstone","Clay"]
-        self.stoneperm = [0,2,-2]        
-        self.stonetoc = [20,1,4]        
-        self.stonepore = [10,30,50]
+        self.stonenames = ["Black Shale","Sandstone","Sandstone","Clay"]
+        self.stoneperm = [0,1,2,-2]        
+        self.stonetoc = [20,1,1,4]        
+        self.stonepore = [10,20,30,50]
         pygame.time.set_timer(pygame.USEREVENT+1, 1000)
     
     def disp_msg(self, msg, topleft): 
