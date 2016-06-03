@@ -373,7 +373,6 @@ class TetrisApp(object):
         for y, row in enumerate(oilmatrix):
             moverow = mp(0,row)
             for x, val in enumerate(row):
-                print(x)
                 if val == self.rocktypes["oil"]["val"] and moverow[x] == 0:
                     self.draw_sub(self.oil,(cols*1.5 + 1,0))
                     if submatrix[y-1][x] == 0:
@@ -422,6 +421,20 @@ class TetrisApp(object):
             'RETURN':    self.insta_drop
         }
         
+		# TEST
+        """
+        kitchen = 10
+        self.subsurface = self.subsurface[:-14]
+        self.subsurface += [ [self.rocktypes["seal"]["val"] if (x<=6 and y%4==1) or (x>=3 and (y)%4==3)  else self.rocktypes["sand_h"]["val"] for x in range(cols) ]
+            for y in range(8) ] #source
+        self.subsurface += [ [self.rocktypes["sand_h"]["val"] if x%2==y%2 else self.rocktypes["sand_l"]["val"] for x in range(cols) ]
+            for y in range(3) ] #sand
+        self.subsurface += [ [self.rocktypes["source"]["val"] if x%2==y%2 else self.rocktypes["sand_h"]["val"] for x in range(cols) ]
+            for y in range(2) ] #source
+        self.subsurface += [ [self.rocktypes["source"]["val"] for x in range(cols) ]
+            for y in range(1) ] #source
+        self.lines = 10
+        """        
         self.gameover = False
         self.paused = True
                 
