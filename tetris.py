@@ -405,6 +405,7 @@ class TetrisApp(object):
                     elif submatrix[y-1][x] < self.rocktypes["seal"]["val"] and oilmatrix[y-1][x] == 0:
                         oilmatrix[y-1][x] = self.rocktypes["oil"]["val"]
                         oilmatrix[y][x] = 0
+                        self.migmax = 0
 # Success, left or right
                     elif not x==0 and not x==cols-1 and submatrix[y][x-1] < self.rocktypes["seal"]["val"] and submatrix[y][x+1] < self.rocktypes["oil"]["val"] and oilmatrix[y][x-1] == 0 and oilmatrix[y][x+1] == 0:
                         rando = int(2*(rand(0,2)-0.5))
@@ -413,15 +414,18 @@ class TetrisApp(object):
                         if rando == 1:
                             moverow[x+1]=1
                         del rando
+                        self.migmax += 1
 # Success, left
                     elif not x==0 and submatrix[y][x-1] < self.rocktypes["seal"]["val"] and oilmatrix[y][x-1] == 0:
                         oilmatrix[y][x-1] = self.rocktypes["oil"]["val"]
                         oilmatrix[y][x] = 0
+                        self.migmax += 1
 # Success, right
                     elif not x==cols-1 and submatrix[y][x+1] < self.rocktypes["seal"]["val"] and oilmatrix[y][x+1] == 0:
                         oilmatrix[y][x+1] = self.rocktypes["oil"]["val"]    
                         oilmatrix[y][x] = 0
                         moverow[x+1]=1
+                        self.migmax += 1
                     else:
                         self.trappedblocks += 1
                         if self.trappedblocks >= self.oilblocks:
@@ -463,10 +467,10 @@ class TetrisApp(object):
             for y in range(3) ] #sand
         self.subsurface += [ [self.rocktypes["source"]["val"] if x%2==y%2 else self.rocktypes["sand_h"]["val"] for x in range(cols) ]
             for y in range(2) ] #source
-        self.subsurface += [ [self.rocktypes["source"]["val"] for x in range(cols) ]
+        self.subsurface += [ [self.rocktypes["seal"]["val"] for x in range(cols) ]
             for y in range(1) ] #source
         self.lines = kitchen
-        """   
+         """  
         self.gameover = False
         self.paused = True
                 
@@ -523,11 +527,11 @@ The tetris game with a geo-twist.\n\n Form lines to build your subsurface.\n Bui
                         
                     elif self.lines >= kitchen:
                         self.slowmig +=1
-                        if self.slowmig == 50:
+                        if self.slowmig == 65:
                             self.slowmig = 0
-                            self.migmax += 1
                             self.oil = self.oil_migrate(self.subsurface,self.oil)
-                            if self.migmax >= self.lines*5:
+                            print(self.migmax)
+                            if self.migmax >= countnz(self.oil)*10+1:
                                 self.gameover = True
                                 self.victory = True
                         self.draw_sub(self.oil,(cols*1.5 + 1,0))
