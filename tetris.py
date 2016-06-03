@@ -156,7 +156,7 @@ class TetrisApp(object):
     def new_stone(self):
         self.stone = self.next_stone[:]
         self.stoneprop = weighted_choice([(self.rocktypes["source"],5),(self.rocktypes["sand_l"],2),(self.rocktypes["sand_h"],2),(self.rocktypes["seal"],2)]) if self.lines <= int(self.lines/7)+1 else weighted_choice([(self.rocktypes["sand_l"],3),(self.rocktypes["sand_h"],3),(self.rocktypes["seal"],3)])
-        self.next_stone = mp(self.stoneprop["val"],tetris_shapes[weighted_choice([(0,10),(1,12),(2,12),(3,11),(4,11),(5,8),(5,9)])])
+        self.next_stone = mp(self.stoneprop["val"],tetris_shapes[weighted_choice([(0,10),(1,12),(2,12),(3,11),(4,11),(5,8),(6,9)])])
         self.stone_x = int(cols / 2 - len(self.stone[0])/2)
         self.stone_y = 0
         self.stonerand = [rand(-1,2),rand(1,4),rand(-3,6)]
