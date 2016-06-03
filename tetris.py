@@ -370,16 +370,17 @@ class TetrisApp(object):
 #        self.subsurface += mp((self.subsurface == 1),3)
         
     def oil_migrate(self,submatrix,oilmatrix):
-        self.trappedblocks = 0
         for y, row in enumerate(oilmatrix):
+            moverow = mp(0,row)
             for x, val in enumerate(row):
-                if val== self.rocktypes["oil"]["val"]:
+                print(x)
+                if val == self.rocktypes["oil"]["val"] and moverow[x] == 0:
                     self.draw_sub(self.oil,(cols*1.5 + 1,0))
                     if submatrix[y-1][x] == 0:
                         self.gameover = True
-                        return oilmatrix
-                    elif submatrix[y-1][x] < self.rocktypes["seal"]["val"] and oilmatrix[y-1][x] == 0:
+                        #return oilmatrix
 # Success, Upward migration                    
+                    elif submatrix[y-1][x] < self.rocktypes["seal"]["val"] and oilmatrix[y-1][x] == 0:
                         oilmatrix[y-1][x] = self.rocktypes["oil"]["val"]
                         oilmatrix[y][x] = 0
 # Success, left or right
@@ -388,20 +389,23 @@ class TetrisApp(object):
                         oilmatrix[y][x+int(2*(rand(0,2)-0.5))] = self.rocktypes["oil"]["val"]
                         oilmatrix[y][x] = 0
                         if rando == 1:
-                            x+=1                            
+                            moverow[x+1]=1
                         del rando
+# Success, left
                     elif not x==0 and submatrix[y][x-1] < self.rocktypes["seal"]["val"] and oilmatrix[y][x-1] == 0:
                         oilmatrix[y][x-1] = self.rocktypes["oil"]["val"]
                         oilmatrix[y][x] = 0
+# Success, right
                     elif not x==cols-1 and submatrix[y][x+1] < self.rocktypes["seal"]["val"] and oilmatrix[y][x+1] == 0:
-                        oilmatrix[y][x+1] = self.rocktypes["oil"]["val"]	
+                        oilmatrix[y][x+1] = self.rocktypes["oil"]["val"]    
                         oilmatrix[y][x] = 0
-                        x+=1
+                        moverow[x+1]=1
                     else:
                         self.trappedblocks += 1
                         if self.trappedblocks >= self.oilblocks:
                             self.gameover = True
                             self.victory = True
+        self.trappedblocks = 0
         return oilmatrix
                     
     
