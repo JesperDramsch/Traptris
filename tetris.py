@@ -177,6 +177,7 @@ class TetrisApp(object):
         self.trappedblocks = 0
         self.score = 0
         self.lines = 0     
+        self.directions = [0]*(rows*2)
         self.rocktypes = {
             "source": {
                 "val": 1,
@@ -374,9 +375,7 @@ class TetrisApp(object):
         
     def oil_migrate(self,submatrix,oilmatrix):
         self.trappedblocks = 0
-        for y, row in reversed(list(enumerate(oilmatrix))):
-            rando = int(2*(rand(0,2)-0.5))
-            print("\n",rando)
+        for y, row in reversed(list(enumerate(oilmatrix))) if self.spill == 0 else enumerate(oilmatrix):
             for x, val in enumerate(row):
                 if val == self.rocktypes["oil"]["val"]:
                     if submatrix[y-1][x] == 0:
@@ -386,6 +385,7 @@ class TetrisApp(object):
                             self.spill = 1
                         if y > height and self.spill_point == x:
                             oilmatrix[y-1][x] = 1
+                            oilmatrix[y][x] = 1
                         elif y <= 1:
                             self.gameover = True
                             self.trappedblocks = countnz(oilmatrix[-self.lines+1:])
@@ -398,7 +398,7 @@ class TetrisApp(object):
                         elif not x == 0   and y <= height:
                             oilmatrix[y-1][x-1] = 1
                         else:
-                            pass
+                            oilmatrix[y][x] = 1
                        #self.gameover = True
                         #
 # Success, Upward migration                    
@@ -408,7 +408,9 @@ class TetrisApp(object):
                         self.migmax = 0
 # Success, left or right
                     elif not x==0 and not x==cols-1 and submatrix[y][x-1] < self.rocktypes["seal"]["val"] and submatrix[y][x+1] < self.rocktypes["seal"]["val"] and oilmatrix[y][x-1] == 0 and oilmatrix[y][x+1] == 0:
-                        oilmatrix[y][x+rando] = 1
+                        if self.directions[y] == 0:
+                            self.directions[y] = int(2*(rand(0,2)-0.5))
+                        oilmatrix[y][x+self.directions[y]] = 1
                         oilmatrix[y][x] = 0
                         self.migmax += 1
 # Success, left
@@ -416,15 +418,15 @@ class TetrisApp(object):
                         oilmatrix[y][x-1] = 1
                         oilmatrix[y][x] = 0
                         self.migmax += 1
-                        rando = 1
+                        self.directions[y] = -1
 # Success, right
                     elif not x==cols-1 and submatrix[y][x+1] < self.rocktypes["seal"]["val"] and oilmatrix[y][x+1] == 0:
                         oilmatrix[y][x+1] = 1
                         oilmatrix[y][x] = 0
                         self.migmax += 1
-                        rando = -1
+                        self.directions[y] = 1
                     else:
-                        self.trappedblocks += 1
+                        self.trappedblocks += 1 
                         oilmatrix[y][x] = 1 
                         if self.trappedblocks >= self.oilblocks:
                             self.gameover = True
@@ -458,7 +460,7 @@ class TetrisApp(object):
             for y in range(3) ] #sand
         self.subsurface += [ [self.rocktypes["source"]["val"] if x%2==y%2 else self.rocktypes["sand_h"]["val"] for x in range(cols) ]
             for y in range(2) ] #source
-        self.subsurface += [ [self.rocktypes["seal"]["val"] for x in range(cols) ]
+        self.subsurface += [ [self.rocktypes["source"]["val"] for x in range(cols) ]
             for y in range(1) ] #source
         self.lines = kitchen
         
@@ -518,7 +520,7 @@ The tetris game with a geo-twist.\n\n Form lines to build your subsurface.\n Bui
                         
                     elif self.lines >= kitchen:
                         self.slowmig +=1
-                        if self.slowmig == 65:
+                        if self.slowmig == 5:
                             self.slowmig = 0
                             self.oil = self.oil_migrate(self.subsurface,self.oil)
                             if self.migmax >= countnz(self.oil)*10+1:
